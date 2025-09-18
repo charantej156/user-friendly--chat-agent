@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🤖 SDK Chat Agent</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <h1 class="heading">Ready when you are.</h1>
+
+  <div class="chat-bar">
+    <input type="text" id="userInput" placeholder="Ask anything..." />
+  </div>
+
+  <div class="chat-box" id="chatBox"></div>
+
+  <script>
+    const chatBox = document.getElementById("chatBox");
+    const userInput = document.getElementById("userInput");
+
+    async function sendMessage() {
+      const message = userInput.value.trim();
+      if (!message) return;
+
+      // Add user message
+      addMessage(message, "user");
+      userInput.value = "";
+
+      // Send to backend
+      try {
+        const response = await fetch("http://127.0.0.1:8000/chat", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ message })
+        });
+        const data = await response.json();
+
+        // Add bot response
+        addMessage(data.response, "bot");
+      } catch (err) {
+        addMessage("⚠️ Error: Could not connect to backend.", "bot");
+      }
+    }
+
+    function addMessage(text, sender) {
+      const row = document.createElement("div");
+      row.classList.add("message-row", sender);
+
+      const msg = document.createElement("div");
+      msg.classList.add("message");
+      msg.innerText = text;
+
+      row.appendChild(msg);
+      chatBox.appendChild(row);
+      chatBox.scrollTop = chatBox.scrollHeight; // Auto scroll
+    }
+
+    // Allow Enter key
+    userInput.addEventListener("keypress", function(e) {
+      if (e.key === "Enter") {
+        sendMessage();
+      }
+    });
+  </script>
+</body>
+</html>
